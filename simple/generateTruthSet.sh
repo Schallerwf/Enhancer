@@ -1,4 +1,5 @@
-#This assumes there is a directory called truthset
+mkdir truthset
+
 for x in {1..1000}
 do
     convert -size 16x16 xc:   +noise Random   "truthset/big-$x.png"
