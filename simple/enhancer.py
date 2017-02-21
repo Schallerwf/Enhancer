@@ -106,7 +106,7 @@ class Network(object):
             input_tensor, seed_tensor = Theano.tensor4(), Theano.tensor4()
             input_layers = {self.network['target']: input_tensor, self.network['source']: seed_tensor}
             for layer in ['source', 'out']:
-                debug('Processing layer ' + layer)
+                debug('Processing layer: ' + layer)
                 output = lasagne.layers.get_output(self.network[layer], input_layers, deterministic=True)
 
             self.predict = theano.function([seed_tensor], output)
@@ -121,7 +121,7 @@ class Network(object):
     def loadPretrainedModel(self, model):
         return pickle.load(bz2.open(model, 'rb'))
 
-    def make_layer(self, name, previousLayer, num_filters, filter_size=(3,3), stride=(1,1), pad=(2,2), alpha=0.25):
+    def make_layer(self, name, previousLayer, num_filters, filter_size=(3,3), stride=(1,1), pad=(1,1), alpha=0.25):
         conv = ConvLayer(previousLayer, num_filters, filter_size, stride=stride, pad=pad, nonlinearity=None)
         prelu = lasagne.layers.ParametricRectifierLayer(conv, alpha=lasagne.init.Constant(alpha))
         self.network[name+'x'] = conv # A convolution is the result of passing a kernel through the filters
@@ -157,11 +157,11 @@ class Network(object):
     def setup_generator(self, input):
         #TODO change these values to be default aurguments
         num_filters = 64
-        num_layers = 4
-        upscale = 2
+        num_layers = 0
+        upscale = 1
 
         # Creates convolutional layers, each one recieving input from the one previous
-        self.make_layer('iter.0', input, num_filters, filter_size=(4,4), pad=(2,2))
+        self.make_layer('iter.0', input, num_filters, filter_size=(3,3), pad=(1,1))
         for i in range(0, num_layers):
             self.make_block('iter.%i'%(i+1), self.getLastLayer(), num_filters)
 
@@ -170,7 +170,11 @@ class Network(object):
             self.make_layer('upscale%i.2'%i, self.getLastLayer(), num_filters*4)
             self.network['upscale%i.1'%i] = SubpixelReshuffleLayer(self.getLastLayer(), num_filters, 2)
 
-        self.network['out'] = ConvLayer(self.getLastLayer(), 3, filter_size=(4,4), pad=(2,2), nonlinearity=None)
+        self.network['out'] = ConvLayer(self.getLastLayer(), 3, filter_size=(3,3), pad=(1,1), nonlinearity=None)
 
 if __name__ == '__main__':
     main()
+
+
+    # compare image1 image2 -compose src diff.png
+    
