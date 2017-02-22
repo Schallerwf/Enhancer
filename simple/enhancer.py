@@ -82,7 +82,8 @@ class Network(object):
             debug('Processing layer with name "{0}" and input with dimensions {1}'.format(layer, layerInput.shape))
             outputFunction = lasagne.layers.get_output(network[layer], layerInput)
             output = outputFunction.eval()
-            visualizeLayer(layerInput, output, layer)
+            if args.visualize:
+                visualizeLayer(layerInput, output, layer)
             layerInput = output
 
 # Takes an image, loaded with PIL (Image.open) and processes it
