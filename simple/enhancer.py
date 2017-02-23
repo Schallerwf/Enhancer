@@ -92,8 +92,10 @@ def preProcessImage(image, args):
     # Convert the image to an array of floats, squash colors values to be in the range 0 to 1.
     img = np.asarray(image, dtype=np.float64) / 255.
 
-    # Flip the image, so it's BGR, not RGB, and make sure it's the correct size.
-    img = img.transpose(2,0,1).reshape(3, args.source_image_size, args.source_image_size)
+    # Images are usually stored with the following dimensions: (width, height, channel)
+    # Theano is going to expect the image to be in (channel, width, height), so we reorganize
+    # the orders of the image dimensions.
+    img = img.transpose(2,0,1)
 
     # Wrap as a 4d array and return.
     return np.asarray([img])
@@ -102,6 +104,8 @@ def preProcessImage(image, args):
 # the middle of a network to an image for visualization purposes.
 def reversePreProcessImage(array):
     array = array * 255.
+
+    img = img.transpose(1,2,0)
 
     return Image.fromarray(array)
 
