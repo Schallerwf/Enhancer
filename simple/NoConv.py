@@ -21,27 +21,29 @@ def loadDataset():
     sources = []
     targets = []
     l = []
-    for x in xrange(1, 15):
+    for x in xrange(1, 4000):
         l.append(x)
     random.shuffle(l)
 
     for x in l:
-        #.transpose(2,0,1)
-        targets.append(np.asarray(Image.open('./images/tiles_{0}.png'.format(x))).flatten()/255.)
-        sources.append(np.asarray(Image.open('./images/smalltiles_{0}.png'.format(x))).transpose(2,0,1).flatten()/255.)
+        targets.append(np.asarray(Image.open('./images/big-{0}.png'.format(x)).convert('RGB')).transpose(2,0,1).flatten()/255.)
+        sources.append(np.asarray(Image.open('./images/small-{0}.png'.format(x)).convert('RGB')).transpose(2,0,1).flatten()/255.)
 
     return (np.asarray(sources), np.asarray(targets))
 
 def main():
     sources, targets = loadDataset()
     np.random.seed(1)
-    weights = 2*np.random.random((12,48)) - 1 # initialize 768 random weights
 
-    for x in xrange(0, 14): # training iterations
+    if len(sys.argv) > 1:
+        weights = np.load(sys.argv[1])
+    else:
+        weights = 2*np.random.random((12,48)) - 1 # initialize 768 random weights
+
+    for x in xrange(0, 3999): # training iterations
         currentInput = sources[x]
         expectedOutput = targets[x]
 
-        print 'Dotting {0} with {1}.'.format(currentInput.shape, weights.shape)
         output = nonlin(np.dot(currentInput,weights))
         error = expectedOutput - output
 
