@@ -23,8 +23,8 @@ def parseArgs():
     parser.add_argument('--dataset', default='./dataset/')
     parser.add_argument('--weights', default=None)
     parser.add_argument('--batchSize', '-b', default=5)
-    parser.add_argument('--weightSaveInterval', '-s', default=1000000)
-    parser.add_argument('--printError', '-e', default=1000)
+    parser.add_argument('--weightSaveInterval', '-s', default=10000000)
+    parser.add_argument('--printError', '-e', default=10000)
     parser.add_argument('--learningRate', '-lr', default=1)
     parser.add_argument('--learningRateDecay', '-lrd', default=10.0)
     parser.add_argument('--learningRateInterval', '-lri', default=1000000)
@@ -65,6 +65,8 @@ def main():
 
     sourceSize = sources[0].shape[0]
     targetSize = targets[0].shape[0]
+    source = sources[0].shape
+    target = targets[0].shape
 
     # Load weights if arg provided, otherwise generate random ones.
     if args.weights != None:
@@ -82,10 +84,16 @@ def main():
     totalError = 0
     for epoch in xrange(0, args.trainingEpochs):
         epochError = 0
-        for x in xrange(1, len(sources)):
+        for x in xrange(0, len(sources)):
             currentInter = ((len(sources) * epoch) + x)
             currentInput = sources[x]
             expectedOutput = targets[x]
+
+            if currentInput.shape != source:
+                continue
+
+            if expectedOutput.shape != target:
+                continue
 
             # Predict an output from currentInput
             # Calculate the difference with the actual image
