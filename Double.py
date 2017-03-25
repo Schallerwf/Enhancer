@@ -35,8 +35,8 @@ def main():
     imgWidth = img[0].shape[0]
     imgHeight = img[0].shape[1]
 
-    cropSize = sqrt(weights.shape[0] / 3)
-    print("Weight dimensions: " + str(weights.shape[0]) + ", " + str(weights.shape[1]))
+    cropSize = sqrt(weights[0].shape[0] / 3)
+    print("Weight dimensions: " + str(weights[0].shape[0]) + ", " + str(weights[0].shape[1]))
     print("Crop size: " + str(cropSize))
     print("Image size: " + str(imgWidth) + ", " + str(imgHeight))
     print("Tile size: " + str(cropSize) + ", " + str(cropSize))
@@ -68,15 +68,21 @@ def main():
         c = 0
         for x in range(0, slices.shape[1]):
             tile = np.squeeze(slices[:, x, y]).flatten()/255.    # convert 4D to 3D
-            expandedTile = (nonlin(np.dot(tile,weights))*255).reshape(3, resultSize, resultSize).astype('uint8').transpose(1,2,0)
+
+            output1 = nonlin(np.dot(tile,weights[0]))
+            output2 = nonlin(np.dot(output1,weights[1]))
+
+            expandedTile = (output2*255).reshape(3, resultSize, resultSize).astype('uint8').transpose(1,2,0)
             
             # Add overlapping values into the result array
-            result[c:c+resultSize, d:d+resultSize, :] += expandedTile
+            currentTitle = result[c:c+resultSize, d:d+resultSize, :]
+            averagedResults = np.mean( np.array([ currentTitle, expandedTile ]), axis=0 )
+            result[c:c+resultSize, d:d+resultSize, :] = averagedResults
             c = c + 2
         d = d + 2
             
     # Average overlapped values and save the new image
-    result[1:(imgWidth*2 - 2), 1:(imgHeight*2 - 2), :] //= 3
+    #result[1:(imgWidth*2 - 2), 1:(imgHeight*2 - 2), :] //= 3
     Image.fromarray(np.uint8(result), 'RGB').save("double.png")
 
 if __name__ == '__main__':
